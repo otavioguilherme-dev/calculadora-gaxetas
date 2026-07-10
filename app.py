@@ -59,50 +59,85 @@ with col_c4:
 
 st.markdown("---")
 
-# --- FORMULÁRIO DE ENTRADA DO ITEM ---
-st.subheader("➕ Adicionar Item")
+# --- FORMULÁRIO DE ENTRADA DE ITENS (ABAS) ---
+st.subheader("➕ Adicionar Item ao Orçamento")
 
-lista_perfis = [
-    "P001", "P002", "P004", "P005", "P006", "P007", "P008", "P010", "P012", "P015",
-    "P016", "P017", "P018", "P019", "P022", "P023", "P026", "P027", "P030", "P032",
-    "P035", "P045", "P096", "P099", "P121", "P171", "P170", "P390", "P391", "P392",
-    "P380", "P560", "P172", "P173", "P393", "P033", "P029", "P394", "P086", "P087",
-    "P088", "P083", "P084", "P082"
-]
+# Criação de duas abas para separar os tipos de produtos
+aba_gaxetas, aba_outros = st.tabs(["🔲 Gaxetas / Borrachas Sob Medida", "📦 Outros Produtos (Inclusão Manual)"])
 
-col1, col2, col3, col4, col5, col6 = st.columns(6)
+# ABA 1: LÓGICA ORIGINAL DE GAXETAS E BORRACHAS
+with aba_gaxetas:
+    lista_perfis = [
+        "P001", "P002", "P004", "P005", "P006", "P007", "P008", "P010", "P012", "P015",
+        "P016", "P017", "P018", "P019", "P022", "P023", "P026", "P027", "P030", "P032",
+        "P035", "P045", "P096", "P099", "P121", "P171", "P170", "P390", "P391", "P392",
+        "P380", "P560", "P172", "P173", "P393", "P033", "P029", "P394", "P086", "P087",
+        "P088", "P083", "P084", "P082"
+    ]
 
-with col1:
-    quantidade = st.number_input("QTD", min_value=1, value=2, step=1)
-with col2:
-    altura = st.number_input("MEDIDA A (Altura mm)", min_value=0, value=1150, step=10)
-with col3:
-    largura = st.number_input("MEDIDA B (Largura mm)", min_value=0, value=560, step=10)
-with col4:
-    perfil_selecionado = st.selectbox("PERFIL", lista_perfis)
-with col5:
-    cor_selecionada = st.selectbox("COR", ["PRETO", "CINZA CLARO", "CINZA GRAFITE"])
-with col6:
-    tipo_preco = st.selectbox("TABELA", ["Consumidor", "Instalador"])
+    col1, col2, col3, col4, col5, col6 = st.columns(6)
 
-perimetro_metros = ((altura * 2) + (largura * 2)) / 1000
-preco_metro_atual = preco_consumidor_m if tipo_preco == "Consumidor" else preco_instalador_m
+    with col1:
+        quantidade_gaxeta = st.number_input("QTD", min_value=1, value=2, step=1, key="qtd_gaxeta")
+    with col2:
+        altura = st.number_input("MEDIDA A (Altura mm)", min_value=0, value=1150, step=10)
+    with col3:
+        largura = st.number_input("MEDIDA B (Largura mm)", min_value=0, value=560, step=10)
+    with col4:
+        perfil_selecionado = st.selectbox("PERFIL", lista_perfis)
+    with col5:
+        cor_selecionada = st.selectbox("COR", ["PRETO", "CINZA CLARO", "CINZA GRAFITE"])
+    with col6:
+        tipo_preco = st.selectbox("TABELA", ["Consumidor", "Instalador"])
 
-valor_unitario = perimetro_metros * preco_metro_atual
-valor_total_item = valor_unitario * quantidade
+    perimetro_metros = ((altura * 2) + (largura * 2)) / 1000
+    preco_metro_atual = preco_consumidor_m if tipo_preco == "Consumidor" else preco_instalador_m
 
-if st.button("🛒 Adicionar Item ao Orçamento", use_container_width=True):
-    item = {
-        "QTD": quantidade,
-        "MEDIDAS": f"{altura}x{largura} mm",
-        "PERFIL": perfil_selecionado,
-        "COR": cor_selecionada,
-        "VALOR UNITARIO": round(valor_unitario, 2),
-        "VALOR TOTAL": round(valor_total_item, 2)
-    }
-    st.session_state.orcamento.append(item)
-    st.rerun()
+    valor_unitario_gaxeta = perimetro_metros * preco_metro_atual
+    valor_total_gaxeta = valor_unitario_gaxeta * quantidade_gaxeta
 
+    if st.button("🛒 Adicionar Borracha/Gaxeta", use_container_width=True):
+        item = {
+            "QTD": quantidade_gaxeta,
+            "MEDIDAS": f"{altura}x{largura} mm",
+            "PERFIL": perfil_selecionado,
+            "COR": cor_selecionada,
+            "VALOR UNITARIO": round(valor_unitario_gaxeta, 2),
+            "VALOR TOTAL": round(valor_total_gaxeta, 2)
+        }
+        st.session_state.orcamento.append(item)
+        st.rerun()
+
+# ABA 2: NOVO PRODUTO MANUAL (Colas, bandejas, etc)
+with aba_outros:
+    st.markdown("Preencha os dados abaixo para adicionar qualquer outro produto ao orçamento:")
+    col_m1, col_m2, col_m3 = st.columns([1, 3, 1])
+    
+    with col_m1:
+        qtd_manual = st.number_input("QTD", min_value=1, value=1, step=1, key="qtd_manual")
+    with col_m2:
+        desc_manual = st.text_input("Descrição / Modelo do Produto", placeholder="Ex: Cola Especial, Bandeja Náutica, etc.")
+    with col_m3:
+        preco_manual = st.number_input("Preço Unitário (R$)", min_value=0.00, value=0.00, step=1.00)
+
+    valor_total_manual = qtd_manual * preco_manual
+
+    if st.button("➕ Adicionar Produto Diversos", use_container_width=True, type="secondary"):
+        if desc_manual.strip() == "":
+            st.warning("⚠️ Por favor, digite uma descrição para o produto.")
+        else:
+            item_manual = {
+                "QTD": qtd_manual,
+                "MEDIDAS": "-",
+                "PERFIL": desc_manual,
+                "COR": "-",
+                "VALOR UNITARIO": round(preco_manual, 2),
+                "VALOR TOTAL": round(valor_total_manual, 2)
+            }
+            st.session_state.orcamento.append(item_manual)
+            st.rerun()
+
+# --- DETALHE DO ORÇAMENTO ---
 st.markdown("---")
 st.subheader("📋 Detalhes do Orçamento")
 
@@ -170,10 +205,10 @@ if st.session_state.orcamento:
                 <tr style='background-color: #f1f5f9; text-align: left; color: #475569;'>
                     <th style='padding: 10px; text-align: center; border-bottom: 2px solid #cbd5e1; width: 8%;'>QTD</th>
                     <th style='padding: 10px; border-bottom: 2px solid #cbd5e1; width: 25%;'>MEDIDAS</th>
-                    <th style='padding: 10px; border-bottom: 2px solid #cbd5e1; width: 15%;'>PERFIL</th>
-                    <th style='padding: 10px; border-bottom: 2px solid #cbd5e1; width: 17%;'>COR</th>
-                    <th style='padding: 10px; text-align: right; border-bottom: 2px solid #cbd5e1; width: 17%;'>VALOR UNITÁRIO</th>
-                    <th style='padding: 10px; text-align: right; border-bottom: 2px solid #cbd5e1; width: 18%;'>VALOR TOTAL</th>
+                    <th style='padding: 10px; border-bottom: 2px solid #cbd5e1; width: 32%;'>PRODUTO / PERFIL</th>
+                    <th style='padding: 10px; border-bottom: 2px solid #cbd5e1; width: 10%;'>COR</th>
+                    <th style='padding: 10px; text-align: right; border-bottom: 2px solid #cbd5e1; width: 12%;'>UNITÁRIO</th>
+                    <th style='padding: 10px; text-align: right; border-bottom: 2px solid #cbd5e1; width: 13%;'>TOTAL</th>
                 </tr>
             </thead>
             <tbody>
