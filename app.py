@@ -2,10 +2,10 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-st.set_page_config(page_title="OGNET BORRACHAS", layout="wide", page_icon="🧮")
+st.set_page_config(page_title="CALCULADORA OGNET BORRACHAS", layout="wide", page_icon="🧮")
 
 # --- CONEXÃO COM O LOGO ORIGINAL NO SEU GITHUB ---
-url_logo_github = "https://raw.githubusercontent.com/otavioguilherme/calculadora-gaxetas/main/LOGO_BANNER.jpg"
+url_logo_github = "LOGO_BANNER.jpg"
 logo_html = f"<img src='{url_logo_github}' style='max-height: 85px; width: auto; max-width: 100%; object-fit: contain;'>"
 
 # Renderização do cabeçalho do aplicativo
