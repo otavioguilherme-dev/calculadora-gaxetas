@@ -40,7 +40,7 @@ st.markdown(
         <div style='display: flex; align-items: center; gap: 25px; flex-wrap: wrap;'>
             <div>{logo_html}</div>
             <div style='border-left: 2px solid #e2e8f0; padding-left: 25px; min-width: 280px;'>
-                <h3 style='margin: 0; color: #1e3a8a; font-family: sans-serif; font-size: 16px; font-weight: 700;'>OTAVIO GUILHERME TEIXEIRA DE SOUZA NETO</h3>
+                <h3 style='margin: 0; color: #1e3a8a; font-family: sans-serif; font-size: 16px; font-weight: 700;'>OGNET BORRACHAS / REFRIGERAÇÃO</h3>
                 <p style='margin: 4px 0 0 0; color: #475569; font-family: sans-serif; font-size: 12px; line-height: 1.5;'>
                     <strong>CNPJ:</strong> 38.233.044/0001-34 | <strong>I.E.:</strong> 799.313.829.119<br>
                     <strong>Endereço:</strong> Rua João Basso, nº 20, Sala 1 Centro - São Bernardo do Campo-SP<br>
@@ -222,7 +222,7 @@ if st.session_state.orcamento:
             <td width="65%" valign="middle">
                 {img_tag}
                 <div style="font-size: 10px; color: #475569; margin-top: 10px; line-height: 1.4;">
-                    <strong>Razão Social:</strong> OTAVIO GUILHERME TEIXEIRA DE SOUZA NETO<br>
+                    <strong>Razão Social:</strong> OGNET BORRACHAS / REFRIGERAÇÃO<br>
                     <strong>CNPJ:</strong> 38.233.044/0001-34 | <strong>I.E.:</strong> 799.313.829.119<br>
                     Rua João Basso, nº 20, Sala 1 Centro - São Bernardo do Campo-SP<br>
                     <strong>Telefone:</strong> (11) 99425-1306 | <strong>E-mail:</strong> vendas@ognet.com.br
