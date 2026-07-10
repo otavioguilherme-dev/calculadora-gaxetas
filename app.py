@@ -302,6 +302,3 @@ if st.session_state.orcamento:
 
 else:
     st.info("Nenhum item adicionado ao orçamento.")
-
-else:
-    st.info("Nenhum item adicionado ao orçamento.")
