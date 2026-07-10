@@ -2,27 +2,13 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-st.set_page_config(page_title="CALCULADORA OGNET BORRACHAS", layout="wide", page_icon="🧮")
+st.set_page_config(page_title="OGNET BORRACHAS", layout="wide", page_icon="🧮")
 
-logo_html = """
-<svg width='240' height='70' viewBox='0 0 450 130' xmlns='http://www.w3.org/2000/svg'>
-    <text x='10' y='55' font-family='Georgia, serif' font-weight='900' font-size='52' fill='#E06A28' letter-spacing='1'>OGNET</text>
-    <text x='10' y='115' font-family='Arial Black, Impact, sans-serif' font-weight='900' font-size='44' fill='#1E2B7A' letter-spacing='-1'>BORRACHAS</text>
-    <circle cx='360' cy='50' r='42' fill='none' stroke='#1E2B7A' stroke-width='10'/>
-    <circle cx='360' cy='50' r='33' fill='none' stroke='#E06A28' stroke-width='4'/>
-    <text x='360' y='62' font-family='Arial, sans-serif' font-weight='bold' font-size='32' fill='#1E2B7A' text-anchor='middle'>G</text>
-    <text x='360' y='42' font-family='Arial, sans-serif' font-weight='bold' font-size='11' fill='#1E2B7A' text-anchor='middle' letter-spacing='1'>NET</text>
-    <rect x='315' y='98' width='92' height='26' fill='#1E2B7A'/>
-    <text x='361' y='116' font-family='Arial, sans-serif' font-weight='500' font-size='17' fill='#FFFFFF' text-anchor='middle' letter-spacing='4'>SHOP</text>
-    <rect x='412' y='12' width='20' height='112' fill='#E06A28'/>
-    <text x='422' y='28' font-family='Arial, sans-serif' font-weight='bold' font-size='13' fill='#FFFFFF' text-anchor='middle'>O</text>
-    <text x='422' y='50' font-family='Arial, sans-serif' font-weight='bold' font-size='13' fill='#FFFFFF' text-anchor='middle'>G</text>
-    <text x='422' y='72' font-family='Arial, sans-serif' font-weight='bold' font-size='13' fill='#FFFFFF' text-anchor='middle'>N</text>
-    <text x='422' y='94' font-family='Arial, sans-serif' font-weight='bold' font-size='13' fill='#FFFFFF' text-anchor='middle'>E</text>
-    <text x='422' y='116' font-family='Arial, sans-serif' font-weight='bold' font-size='13' fill='#FFFFFF' text-anchor='middle'>T</text>
-</svg>
-"""
+# --- CONEXÃO COM O LOGO ORIGINAL NO SEU GITHUB ---
+url_logo_github = "https://raw.githubusercontent.com/otavioguilherme/calculadora-gaxetas/main/LOGO_BANNER.jpg"
+logo_html = f"<img src='{url_logo_github}' style='max-height: 85px; width: auto; max-width: 100%; object-fit: contain;'>"
 
+# Renderização do cabeçalho do aplicativo
 st.markdown(
     f"""
     <div style='display: flex; flex-direction: row; justify-content: space-between; align-items: center; 
@@ -146,13 +132,13 @@ if st.session_state.orcamento:
             <td style='padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;'><strong>R$ {row['VALOR TOTAL']:.2f}</strong></td>
         </tr>
         """
-    
+
     html_template = f"""
     <div style='font-family: system-ui, sans-serif; color: #334155; padding: 30px; background: white; border: 1px solid #cbd5e1; border-radius: 12px; max-width: 850px; margin: 20px auto; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);'>
         <div style='display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #1e2b7a; padding-bottom: 20px; margin-bottom: 25px;'>
             <div>
-                {logo_html}
-                <div style='font-size: 11px; margin-top: 10px; line-height: 1.5; color: #475569;'>
+                <div style='margin-bottom: 10px;'>{logo_html}</div>
+                <div style='font-size: 11px; line-height: 1.5; color: #475569;'>
                     <strong>Razão Social:</strong> OTAVIO GUILHERME TEIXEIRA DE SOUZA NETO<br>
                     <strong>CNPJ:</strong> 38.233.044/0001-34 | <strong>I.E.:</strong> 799.313.829.119<br>
                     Rua João Basso, nº 20, Sala 1 Centro - São Bernardo do Campo-SP<br>
@@ -215,12 +201,6 @@ if st.session_state.orcamento:
             use_container_width=True,
             type="primary"
         )
-        
-    st.markdown("---")
-    st.subheader("👁️ Espelho do Orçamento para Envio")
-    st.markdown("Confira abaixo a folha oficial gerada em tempo real:")
-    
-    st.markdown(html_template, unsafe_allow_html=True)
 
 else:
     st.info("Nenhum item adicionado ao orçamento.")
