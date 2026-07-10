@@ -108,7 +108,7 @@ perimetro_metros = ((altura * 2) + (largura * 2)) / 1000
 preco_metro_atual = preco_consumidor_m if tipo_preco == "Consumidor" else preco_instalador_m
 
 valor_unitario = perimetro_metros * preco_metro_atual
-valor_total_item = valor_unitario * quantidade
+valor_total_item = valor_unitario * quantity = quantidade
 
 if st.button("🛒 Adicionar Item ao Orçamento", use_container_width=True):
     item = {
@@ -146,58 +146,58 @@ if st.session_state.orcamento:
         st.markdown(f"**Frete de Envio:** R$ {valor_frete:.2f}")
         st.markdown(f"### **TOTAL GERAL: R$ {total_geral:.2f}**")
     
-    # --- CONSTRUÇÃO DO HTML (À Prova de Erros de Renderização) ---
+    # --- CONSTRUÇÃO DO HTML ---
     data_formatada = data_emissao.strftime('%d/%m/%Y')
     
     linhas_html = ""
     for _, row in df_orcamento.iterrows():
         linhas_html += f"""
         <tr>
-            <td style="padding: 10px; text-align: center; border-bottom: 1px solid #e2e8f0;">{row['QTD']}</td>
-            <td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">{row['MEDIDAS']}</td>
-            <td style="padding: 10px; border-bottom: 1px solid #e2e8f0; color:#1e2b7a;"><strong>{row['PERFIL']}</strong></td>
-            <td style="padding: 10px; border-bottom: 1px solid #e2e8f0;">{row['COR']}</td>
-            <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;">R$ {row['VALOR UNITARIO']:.2f}</td>
-            <td style="padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;"><strong>R$ {row['VALOR TOTAL']:.2f}</strong></td>
+            <td style='padding: 10px; text-align: center; border-bottom: 1px solid #e2e8f0;'>{row['QTD']}</td>
+            <td style='padding: 10px; border-bottom: 1px solid #e2e8f0;'>{row['MEDIDAS']}</td>
+            <td style='padding: 10px; border-bottom: 1px solid #e2e8f0; color:#1e2b7a;'><strong>{row['PERFIL']}</strong></td>
+            <td style='padding: 10px; border-bottom: 1px solid #e2e8f0;'>{row['COR']}</td>
+            <td style='padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;'>R$ {row['VALOR UNITARIO']:.2f}</td>
+            <td style='padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;'><strong>R$ {row['VALOR TOTAL']:.2f}</strong></td>
         </tr>
         """
     
-    # Logo em String limpa para injetar no documento final
+    # Limpa as aspas do logo para evitar problemas no Markdown do Python
     logo_impressao = logo_svg.replace('\n', '').replace('"', "'")
 
     html_template = f"""
-    <div style="font-family: system-ui, -apple-system, sans-serif; color: #334155; padding: 30px; background: white; border: 1px solid #cbd5e1; border-radius: 12px; max-width: 850px; margin: 20px auto; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #1e2b7a; padding-bottom: 20px; margin-bottom: 25px;">
+    <div style='font-family: system-ui, -apple-system, sans-serif; color: #334155; padding: 30px; background: white; border: 1px solid #cbd5e1; border-radius: 12px; max-width: 850px; margin: 20px auto; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);'>
+        <div style='display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #1e2b7a; padding-bottom: 20px; margin-bottom: 25px;'>
             <div>
                 {logo_impressao}
-                <div style="font-size: 11px; margin-top: 10px; line-height: 1.5; color: #475569;">
+                <div style='font-size: 11px; margin-top: 10px; line-height: 1.5; color: #475569;'>
                     <strong>Razão Social:</strong> OTAVIO GUILHERME TEIXEIRA DE SOUZA NETO<br>
                     <strong>CNPJ:</strong> 38.233.044/0001-34 | <strong>I.E.:</strong> 799.313.829.119<br>
                     Rua João Basso, nº 20, Sala 1 Centro - São Bernardo do Campo-SP<br>
                     <strong>Telefone:</strong> (11) 99425-1306 | <strong>E-mail:</strong> vendas@ognet.com.br
                 </div>
             </div>
-            <div style="text-align: right;">
-                <span style="background-color: #1e2b7a; color: white; padding: 6px 16px; font-weight: bold; border-radius: 6px; font-size: 13px; letter-spacing: 1px;">ORÇAMENTO COMERCIAL</span>
+            <div style='text-align: right;'>
+                <span style='background-color: #1e2b7a; color: white; padding: 6px 16px; font-weight: bold; border-radius: 6px; font-size: 13px; letter-spacing: 1px;'>ORÇAMENTO COMERCIAL</span>
             </div>
         </div>
 
-        <div style="background-color: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 25px; font-size: 13px; line-height: 1.6;">
-            <h4 style="margin: 0 0 8px 0; color: #1e2b7a; font-size: 14px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">DADOS DO CLIENTE</h4>
+        <div style='background-color: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 25px; font-size: 13px; line-height: 1.6;'>
+            <h4 style='margin: 0 0 8px 0; color: #1e2b7a; font-size: 14px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;'>DADOS DO CLIENTE</h4>
             <strong>Cliente / Razão Social:</strong> {nome_cliente if nome_cliente else 'Não Informado'}<br>
             <strong>CPF / CNPJ:</strong> {cnpj_cliente if cnpj_cliente else 'Não Informado'}<br>
             <strong>Data de Emissão:</strong> {data_formatada}
         </div>
 
-        <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 25px;">
+        <table style='width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 25px;'>
             <thead>
-                <tr style="background-color: #f1f5f9; text-align: left; color: #475569;">
-                    <th style="padding: 10px; text-align: center; border-bottom: 2px solid #cbd5e1; width: 8%;">QTD</th>
-                    <th style="padding: 10px; border-bottom: 2px solid #cbd5e1; width: 25%;">MEDIDAS</th>
-                    <th style="padding: 10px; border-bottom: 2px solid #cbd5e1; width: 15%;">PERFIL</th>
-                    <th style="padding: 10px; border-bottom: 2px solid #cbd5e1; width: 17%;">COR</th>
-                    <th style="padding: 10px; text-align: right; border-bottom: 2px solid #cbd5e1; width: 17%;">VALOR UNITÁRIO</th>
-                    <th style="padding: 10px; text-align: right; border-bottom: 2px solid #cbd5e1; width: 18%;">VALOR TOTAL</th>
+                <tr style='background-color: #f1f5f9; text-align: left; color: #475569;'>
+                    <th style='padding: 10px; text-align: center; border-bottom: 2px solid #cbd5e1; width: 8%;'>QTD</th>
+                    <th style='padding: 10px; border-bottom: 2px solid #cbd5e1; width: 25%;'>MEDIDAS</th>
+                    <th style='padding: 10px; border-bottom: 2px solid #cbd5e1; width: 15%;'>PERFIL</th>
+                    <th style='padding: 10px; border-bottom: 2px solid #cbd5e1; width: 17%;'>COR</th>
+                    <th style='padding: 10px; text-align: right; border-bottom: 2px solid #cbd5e1; width: 17%;'>VALOR UNITÁRIO</th>
+                    <th style='padding: 10px; text-align: right; border-bottom: 2px solid #cbd5e1; width: 18%;'>VALOR TOTAL</th>
                 </tr>
             </thead>
             <tbody>
@@ -205,13 +205,13 @@ if st.session_state.orcamento:
             </tbody>
         </table>
 
-        <div style="text-align: right; font-size: 14px; margin-top: 20px; line-height: 1.6; border-top: 1px solid #f1f5f9; padding-top: 15px;">
-            <span style="color: #64748b;">Subtotal dos Itens:</span> R$ {subtotal:.2f}<br>
-            <span style="color: #64748b;">Valor do Frete:</span> R$ {valor_frete:.2f}<br>
-            <div style="margin-top: 5px; font-size: 18px; color: #1e2b7a;"><strong>TOTAL GERAL: R$ {total_geral:.2f}</strong></div>
+        <div style='text-align: right; font-size: 14px; margin-top: 20px; line-height: 1.6; border-top: 1px solid #f1f5f9; padding-top: 15px;'>
+            <span style='color: #64748b;'>Subtotal dos Itens:</span> R$ {subtotal:.2f}<br>
+            <span style='color: #64748b;'>Valor do Frete:</span> R$ {valor_frete:.2f}<br>
+            <div style='margin-top: 5px; font-size: 18px; color: #1e2b7a;'><strong>TOTAL GERAL: R$ {total_geral:.2f}</strong></div>
         </div>
 
-        <div style="margin-top: 40px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; line-height: 1.5;">
+        <div style='margin-top: 40px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; line-height: 1.5;'>
             * Peças industriais fabricadas sob medida e especificações técnicas solicitadas.<br>
             <strong>Prazo de Validade deste documento:</strong> 10 dias a contar da data de emissão.
         </div>
@@ -240,8 +240,8 @@ if st.session_state.orcamento:
     st.subheader("👁️ Espelho do Orçamento para Envio")
     st.markdown("Confira abaixo a folha oficial gerada em tempo real:")
     
-    # Renderização direta e limpa para evitar falhas no interpretador do Streamlit
-    st.html(html_template)
+    # Renderização compatível com todas as versões do Streamlit
+    st.markdown(html_template, unsafe_allow_html=True)
 
 else:
     st.info("Nenhum item adicionado ao orçamento.")
