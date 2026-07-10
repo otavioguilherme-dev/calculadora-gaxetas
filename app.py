@@ -108,7 +108,7 @@ perimetro_metros = ((altura * 2) + (largura * 2)) / 1000
 preco_metro_atual = preco_consumidor_m if tipo_preco == "Consumidor" else preco_instalador_m
 
 valor_unitario = perimetro_metros * preco_metro_atual
-valor_total_item = valor_unitario * quantity = quantidade
+valor_total_item = valor_unitario * quantidade
 
 if st.button("🛒 Adicionar Item ao Orçamento", use_container_width=True):
     item = {
@@ -162,7 +162,6 @@ if st.session_state.orcamento:
         </tr>
         """
     
-    # Limpa as aspas do logo para evitar problemas no Markdown do Python
     logo_impressao = logo_svg.replace('\n', '').replace('"', "'")
 
     html_template = f"""
