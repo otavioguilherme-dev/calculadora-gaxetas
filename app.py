@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime
 
 # Configuração da página
-st.set_page_config(page_title="Calculadora Ognet-Shop", layout="wide", page_icon="🧮")
+st.set_page_config(page_title="Calculadora OGNET BORRACHAS", layout="wide", page_icon="🧮")
 
 # --- ESTILIZAÇÃO DO LOGOTIPO E DADOS DA EMPRESA (image_79ef50.png) ---
 st.markdown(
