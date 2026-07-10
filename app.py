@@ -2,54 +2,44 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 
-# Configuração da página
-st.set_page_config(page_title="OGNET BORRACHAS", layout="wide", page_icon="🧮")
+st.set_page_config(page_title="CALCULADORA OGNET BORRACHAS", layout="wide", page_icon="🧮")
 
-# --- LOGOTIPO EM VETOR DIGITAL DE ALTA DEFINIÇÃO (Baseado em LOGO_BANNER.jpg) ---
-logo_svg = """
-<svg width="240" height="70" viewBox="0 0 450 130" xmlns="http://www.w3.org/2000/svg">
-    <!-- Texto Principal Esquerda -->
-    <text x="10" y="55" font-family="'Georgia', 'serif', 'Arial'" font-weight="900" font-size="52" fill="#E06A28" letter-spacing="1">OGNET</text>
-    <text x="10" y="115" font-family="'Arial Black', 'Impact', sans-serif" font-weight="900" font-size="44" fill="#1E2B7A" letter-spacing="-1">BORRACHAS</text>
-    
-    <!-- Ícone Circular G-SHOP -->
-    <circle cx="360" cy="50" r="42" fill="none" stroke="#1E2B7A" stroke-width="10"/>
-    <circle cx="360" cy="50" r="33" fill="none" stroke="#E06A28" stroke-width="4"/>
-    <text x="360" y="62" font-family="'Arial', sans-serif" font-weight="bold" font-size="32" fill="#1E2B7A" text-anchor="middle">G</text>
-    <text x="360" y="42" font-family="'Arial', sans-serif" font-weight="bold" font-size="11" fill="#1E2B7A" text-anchor="middle" letter-spacing="1">NET</text>
-    
-    <!-- Faixa Inferior SHOP -->
-    <rect x="315" y="98" width="92" height="26" fill="#1E2B7A"/>
-    <text x="361" y="116" font-family="'Arial', sans-serif" font-weight="500" font-size="17" fill="#FFFFFF" text-anchor="middle" letter-spacing="4">SHOP</text>
-    
-    <!-- Faixa Lateral OGNET -->
-    <rect x="412" y="12" width="20" height="112" fill="#E06A28"/>
-    <text x="422" y="28" font-family="'Arial', sans-serif" font-weight="bold" font-size="13" fill="#FFFFFF" text-anchor="middle">O</text>
-    <text x="422" y="50" font-family="'Arial', sans-serif" font-weight="bold" font-size="13" fill="#FFFFFF" text-anchor="middle">G</text>
-    <text x="422" y="72" font-family="'Arial', sans-serif" font-weight="bold" font-size="13" fill="#FFFFFF" text-anchor="middle">N</text>
-    <text x="422" y="94" font-family="'Arial', sans-serif" font-weight="bold" font-size="13" fill="#FFFFFF" text-anchor="middle">E</text>
-    <text x="422" y="116" font-family="'Arial', sans-serif" font-weight="bold" font-size="13" fill="#FFFFFF" text-anchor="middle">T</text>
+logo_html = """
+<svg width='240' height='70' viewBox='0 0 450 130' xmlns='http://www.w3.org/2000/svg'>
+    <text x='10' y='55' font-family='Georgia, serif' font-weight='900' font-size='52' fill='#E06A28' letter-spacing='1'>OGNET</text>
+    <text x='10' y='115' font-family='Arial Black, Impact, sans-serif' font-weight='900' font-size='44' fill='#1E2B7A' letter-spacing='-1'>BORRACHAS</text>
+    <circle cx='360' cy='50' r='42' fill='none' stroke='#1E2B7A' stroke-width='10'/>
+    <circle cx='360' cy='50' r='33' fill='none' stroke='#E06A28' stroke-width='4'/>
+    <text x='360' y='62' font-family='Arial, sans-serif' font-weight='bold' font-size='32' fill='#1E2B7A' text-anchor='middle'>G</text>
+    <text x='360' y='42' font-family='Arial, sans-serif' font-weight='bold' font-size='11' fill='#1E2B7A' text-anchor='middle' letter-spacing='1'>NET</text>
+    <rect x='315' y='98' width='92' height='26' fill='#1E2B7A'/>
+    <text x='361' y='116' font-family='Arial, sans-serif' font-weight='500' font-size='17' fill='#FFFFFF' text-anchor='middle' letter-spacing='4'>SHOP</text>
+    <rect x='412' y='12' width='20' height='112' fill='#E06A28'/>
+    <text x='422' y='28' font-family='Arial, sans-serif' font-weight='bold' font-size='13' fill='#FFFFFF' text-anchor='middle'>O</text>
+    <text x='422' y='50' font-family='Arial, sans-serif' font-weight='bold' font-size='13' fill='#FFFFFF' text-anchor='middle'>G</text>
+    <text x='422' y='72' font-family='Arial, sans-serif' font-weight='bold' font-size='13' fill='#FFFFFF' text-anchor='middle'>N</text>
+    <text x='422' y='94' font-family='Arial, sans-serif' font-weight='bold' font-size='13' fill='#FFFFFF' text-anchor='middle'>E</text>
+    <text x='422' y='116' font-family='Arial, sans-serif' font-weight='bold' font-size='13' fill='#FFFFFF' text-anchor='middle'>T</text>
 </svg>
 """
 
-# Renderização do cabeçalho da aplicação
 st.markdown(
     f"""
-    <div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; 
-                background-color: white; padding: 20px; border-radius: 15px; border: 1px solid #e2e8f0; margin-bottom: 25px; gap: 20px;">
-        <div style="display: flex; align-items: center; gap: 25px; flex-wrap: wrap;">
-            <div>{logo_svg}</div>
-            <div style="border-left: 2px solid #e2e8f0; padding-left: 25px; min-width: 280px;">
-                <h3 style="margin: 0; color: #1e3a8a; font-family: sans-serif; font-size: 16px; font-weight: 700;">OTAVIO GUILHERME TEIXEIRA DE SOUZA NETO</h3>
-                <p style="margin: 4px 0 0 0; color: #475569; font-family: sans-serif; font-size: 12px; line-height: 1.5;">
+    <div style='display: flex; flex-direction: row; justify-content: space-between; align-items: center; 
+                background-color: white; padding: 20px; border-radius: 15px; border: 1px solid #e2e8f0; margin-bottom: 25px; gap: 20px;'>
+        <div style='display: flex; align-items: center; gap: 25px; flex-wrap: wrap;'>
+            <div>{logo_html}</div>
+            <div style='border-left: 2px solid #e2e8f0; padding-left: 25px; min-width: 280px;'>
+                <h3 style='margin: 0; color: #1e3a8a; font-family: sans-serif; font-size: 16px; font-weight: 700;'>OTAVIO GUILHERME TEIXEIRA DE SOUZA NETO</h3>
+                <p style='margin: 4px 0 0 0; color: #475569; font-family: sans-serif; font-size: 12px; line-height: 1.5;'>
                     <strong>CNPJ:</strong> 38.233.044/0001-34 | <strong>I.E.:</strong> 799.313.829.119<br>
                     <strong>Endereço:</strong> Rua João Basso, nº 20, Sala 1 Centro - São Bernardo do Campo-SP<br>
                     <strong>Contato:</strong> (11) 99425-1306 | <strong>E-mail:</strong> vendas@ognet.com.br
                 </p>
             </div>
         </div>
-        <div style="text-align: right;">
-            <span style="background-color: #f1f5f9; color: #1e2b7a; font-size: 11px; font-weight: 800; padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; letter-spacing: 0.5px;">SISTEMA DE ORÇAMENTOS</span>
+        <div style='text-align: right;'>
+            <span style='background-color: #f1f5f9; color: #1e2b7a; font-size: 11px; font-weight: 800; padding: 6px 12px; border-radius: 8px; border: 1px solid #cbd5e1; letter-spacing: 0.5px;'>SISTEMA DE ORÇAMENTOS</span>
         </div>
     </div>
     """,
@@ -59,12 +49,10 @@ st.markdown(
 if "orcamento" not in st.session_state:
     st.session_state.orcamento = []
 
-# --- PAINEL LATERAL ---
 st.sidebar.header("⚙️ Valores Globais (por Metro)")
 preco_instalador_m = st.sidebar.number_input("Preço Instalador / Revenda (R$)", value=25.00, step=1.00)
 preco_consumidor_m = st.sidebar.number_input("Preço Consumidor / Balcão (R$)", value=30.00, step=1.00)
 
-# --- CAMPOS DO CLIENTE ---
 st.subheader("👤 Dados do Cliente e Envio")
 col_c1, col_c2, col_c3, col_c4 = st.columns([2, 1, 1, 1])
 with col_c1:
@@ -78,7 +66,6 @@ with col_c4:
 
 st.markdown("---")
 
-# --- FORMULÁRIO DE ENTRADA DO ITEM ---
 st.subheader("➕ Adicionar Item")
 
 lista_perfis = [
@@ -122,7 +109,6 @@ if st.button("🛒 Adicionar Item ao Orçamento", use_container_width=True):
     st.session_state.orcamento.append(item)
     st.rerun()
 
-# --- DETALHE DO ORÇAMENTO DO SISTEMA ---
 st.markdown("---")
 st.subheader("📋 Detalhes do Orçamento")
 
@@ -146,7 +132,6 @@ if st.session_state.orcamento:
         st.markdown(f"**Frete de Envio:** R$ {valor_frete:.2f}")
         st.markdown(f"### **TOTAL GERAL: R$ {total_geral:.2f}**")
     
-    # --- CONSTRUÇÃO DO HTML ---
     data_formatada = data_emissao.strftime('%d/%m/%Y')
     
     linhas_html = ""
@@ -162,13 +147,11 @@ if st.session_state.orcamento:
         </tr>
         """
     
-    logo_impressao = logo_svg.replace('\n', '').replace('"', "'")
-
     html_template = f"""
-    <div style='font-family: system-ui, -apple-system, sans-serif; color: #334155; padding: 30px; background: white; border: 1px solid #cbd5e1; border-radius: 12px; max-width: 850px; margin: 20px auto; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);'>
+    <div style='font-family: system-ui, sans-serif; color: #334155; padding: 30px; background: white; border: 1px solid #cbd5e1; border-radius: 12px; max-width: 850px; margin: 20px auto; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);'>
         <div style='display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #1e2b7a; padding-bottom: 20px; margin-bottom: 25px;'>
             <div>
-                {logo_impressao}
+                {logo_html}
                 <div style='font-size: 11px; margin-top: 10px; line-height: 1.5; color: #475569;'>
                     <strong>Razão Social:</strong> OTAVIO GUILHERME TEIXEIRA DE SOUZA NETO<br>
                     <strong>CNPJ:</strong> 38.233.044/0001-34 | <strong>I.E.:</strong> 799.313.829.119<br>
@@ -217,7 +200,6 @@ if st.session_state.orcamento:
     </div>
     """
 
-    # Botões operacionais
     col_b1, col_b2 = st.columns([1, 4])
     with col_b1:
         if st.button("🗑️ Limpar Lista", use_container_width=True):
@@ -234,12 +216,10 @@ if st.session_state.orcamento:
             type="primary"
         )
         
-    # --- ÁREA DE PRÉ-VISUALIZAÇÃO CORRIGIDA ---
     st.markdown("---")
     st.subheader("👁️ Espelho do Orçamento para Envio")
     st.markdown("Confira abaixo a folha oficial gerada em tempo real:")
     
-    # Renderização compatível com todas as versões do Streamlit
     st.markdown(html_template, unsafe_allow_html=True)
 
 else:
