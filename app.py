@@ -6,7 +6,7 @@ import base64
 from io import BytesIO
 from xhtml2pdf import pisa
 
-st.set_page_config(page_title="CALCULADORA OGNET BORRACHAS", layout="wide", page_icon="🧮")
+st.set_page_config(page_title="OGNET BORRACHAS", layout="wide", page_icon="🧮")
 
 # --- FUNÇÕES DE APOIO ---
 def format_brl(valor):
@@ -220,7 +220,7 @@ if st.session_state.orcamento:
             <td width="65%" valign="middle">
                 {img_tag}
                 <div style="font-size: 10px; color: #475569; margin-top: 10px; line-height: 1.4;">
-                    <strong>Razão Social:</strong> OGNET BORRACHAS <br>
+                    <strong>Razão Social:</strong> OTAVIO GUILHERME TEIXEIRA DE SOUZA NETO<br>
                     <strong>CNPJ:</strong> 38.233.044/0001-34 | <strong>I.E.:</strong> 799.313.829.119<br>
                     Rua João Basso, nº 20, Sala 1 Centro - São Bernardo do Campo-SP<br>
                     <strong>Telefone:</strong> (11) 99425-1306 | <strong>E-mail:</strong> vendas@ognet.com.br
@@ -285,15 +285,23 @@ if st.session_state.orcamento:
             st.rerun()
             
     with col_b2:
-        # Botão de download já servindo o arquivo binário convertido (.pdf)
+        # Lógica para nome do arquivo: Usa o nome do cliente se preenchido, senão 'Cliente'
+        nome_arquivo = nome_cliente.strip().replace(" ", "_") if nome_cliente.strip() else "Cliente"
+        data_arquivo = datetime.now().strftime('%d%m%Y')
+        nome_completo_arquivo = f"Orcamento_{nome_arquivo}_{data_arquivo}.pdf"
+
+        # Botão de download
         st.download_button(
-            label="💾 Baixar Documento de Orçamento (Arquivo PDF)",
+            label=f"💾 Baixar Documento ({nome_completo_arquivo})",
             data=criar_pdf(html_template),
-            file_name=f"Orcamento_OGNET_{datetime.now().strftime('%d%m%Y')}.pdf",
+            file_name=nome_completo_arquivo,
             mime="application/pdf",
             use_container_width=True,
             type="primary"
         )
+
+else:
+    st.info("Nenhum item adicionado ao orçamento.")
 
 else:
     st.info("Nenhum item adicionado ao orçamento.")
