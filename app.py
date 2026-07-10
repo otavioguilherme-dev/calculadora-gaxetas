@@ -196,10 +196,12 @@ if st.session_state.orcamento:
 
     img_tag = f'<img src="{logo_src}" style="height: 60px;"><br>' if logo_src else ''
 
-    # Template HTML estruturado especificamente para a biblioteca xhtml2pdf
+    # Template HTML estruturado especificamente para a biblioteca xhtml2pdf (COM CODIFICAÇÃO UTF-8)
     html_template = f"""
+    <!DOCTYPE html>
     <html>
     <head>
+    <meta charset="UTF-8">
     <style>
         @page {{ size: A4; margin: 1cm; }}
         body {{ font-family: Helvetica, sans-serif; font-size: 12px; color: #334155; }}
@@ -272,10 +274,11 @@ if st.session_state.orcamento:
     </html>
     """
 
-    # Função que transforma o HTML estruturado acima em um arquivo PDF real
+    # Função atualizada para forçar o encoding correto no PDF
     def criar_pdf(html_content):
         pdf_buffer = BytesIO()
-        pisa.CreatePDF(BytesIO(html_content.encode('utf-8')), dest=pdf_buffer)
+        # Forçamos a leitura em UTF-8 para garantir que "ç", "ã", "ó" fiquem certos
+        pisa.CreatePDF(html_content, dest=pdf_buffer, encoding='utf-8')
         return pdf_buffer.getvalue()
 
     col_b1, col_b2 = st.columns([1, 4])
@@ -285,7 +288,7 @@ if st.session_state.orcamento:
             st.rerun()
             
     with col_b2:
-        # Lógica para nome do arquivo: Usa o nome do cliente se preenchido, senão 'Cliente'
+        # Lógica para nome do arquivo
         nome_arquivo = nome_cliente.strip().replace(" ", "_") if nome_cliente.strip() else "Cliente"
         data_arquivo = datetime.now().strftime('%d%m%Y')
         nome_completo_arquivo = f"Orcamento_{nome_arquivo}_{data_arquivo}.pdf"
