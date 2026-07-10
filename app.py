@@ -1,19 +1,38 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+import requests
+import base64
+from io import BytesIO
+from xhtml2pdf import pisa
 
 st.set_page_config(page_title="OGNET BORRACHAS", layout="wide", page_icon="🧮")
 
-# --- LOGOTIPO HOSPEDADO NO STREAMLIT ---
-logo_url = "https://agent-whatsapp.streamlit.app/~/+/media/a3d2d8b206613ad841cb11e9bf12f484.jpg"
+# --- FUNÇÕES DE APOIO ---
+def format_brl(valor):
+    """Formata os números para o padrão de moeda brasileiro (R$ 1.500,00)"""
+    return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+
+@st.cache_data
+def get_logo_base64():
+    """Baixa o logo para a memória do servidor para o PDF não quebrar"""
+    url = "https://agent-whatsapp.streamlit.app/~/+/media/a3d2d8b206613ad841cb11e9bf12f484.jpg"
+    try:
+        response = requests.get(url)
+        return base64.b64encode(response.content).decode()
+    except:
+        return ""
+
+logo_b64 = get_logo_base64()
+logo_src = f"data:image/jpeg;base64,{logo_b64}" if logo_b64 else ""
 
 logo_html = f"""
 <div style='display: flex; justify-content: center; align-items: center; margin-bottom: 10px;'>
-    <img src='{logo_url}' style='max-height: 85px; width: auto; object-fit: contain;'>
+    <img src='{logo_src}' style='max-height: 85px; width: auto; object-fit: contain;'>
 </div>
 """
 
-# Renderização do cabeçalho da loja (OGNET BORRACHAS)
+# Renderização do cabeçalho da loja na tela do sistema
 st.markdown(
     f"""
     <div style='display: flex; flex-direction: row; justify-content: space-between; align-items: center; 
@@ -62,10 +81,9 @@ st.markdown("---")
 # --- FORMULÁRIO DE ENTRADA DE ITENS (ABAS) ---
 st.subheader("➕ Adicionar Item ao Orçamento")
 
-# Criação de duas abas para separar os tipos de produtos
 aba_gaxetas, aba_outros = st.tabs(["🔲 Gaxetas / Borrachas Sob Medida", "📦 Outros Produtos (Inclusão Manual)"])
 
-# ABA 1: LÓGICA ORIGINAL DE GAXETAS E BORRACHAS
+# ABA 1: GAXETAS E BORRACHAS
 with aba_gaxetas:
     lista_perfis = [
         "P001", "P002", "P004", "P005", "P006", "P007", "P008", "P010", "P012", "P015",
@@ -76,7 +94,6 @@ with aba_gaxetas:
     ]
 
     col1, col2, col3, col4, col5, col6 = st.columns(6)
-
     with col1:
         quantidade_gaxeta = st.number_input("QTD", min_value=1, value=2, step=1, key="qtd_gaxeta")
     with col2:
@@ -102,17 +119,16 @@ with aba_gaxetas:
             "MEDIDAS": f"{altura}x{largura} mm",
             "PERFIL": perfil_selecionado,
             "COR": cor_selecionada,
-            "VALOR UNITARIO": round(valor_unitario_gaxeta, 2),
-            "VALOR TOTAL": round(valor_total_gaxeta, 2)
+            "VALOR UNITARIO": valor_unitario_gaxeta,
+            "VALOR TOTAL": valor_total_gaxeta
         }
         st.session_state.orcamento.append(item)
         st.rerun()
 
-# ABA 2: NOVO PRODUTO MANUAL (Colas, bandejas, etc)
+# ABA 2: OUTROS PRODUTOS (MANUAL)
 with aba_outros:
     st.markdown("Preencha os dados abaixo para adicionar qualquer outro produto ao orçamento:")
     col_m1, col_m2, col_m3 = st.columns([1, 3, 1])
-    
     with col_m1:
         qtd_manual = st.number_input("QTD", min_value=1, value=1, step=1, key="qtd_manual")
     with col_m2:
@@ -131,8 +147,8 @@ with aba_outros:
                 "MEDIDAS": "-",
                 "PERFIL": desc_manual,
                 "COR": "-",
-                "VALOR UNITARIO": round(preco_manual, 2),
-                "VALOR TOTAL": round(valor_total_manual, 2)
+                "VALOR UNITARIO": preco_manual,
+                "VALOR TOTAL": valor_total_manual
             }
             st.session_state.orcamento.append(item_manual)
             st.rerun()
@@ -146,9 +162,10 @@ if st.session_state.orcamento:
     ordem_colunas = ["QTD", "MEDIDAS", "PERFIL", "COR", "VALOR UNITARIO", "VALOR TOTAL"]
     df_orcamento = df_orcamento[ordem_colunas]
     
+    # Formatação apenas para a exibição na tela
     df_exibicao = df_orcamento.copy()
-    df_exibicao["VALOR UNITARIO"] = df_exibicao["VALOR UNITARIO"].map("R$ {:.2f}".format)
-    df_exibicao["VALOR TOTAL"] = df_exibicao["VALOR TOTAL"].map("R$ {:.2f}".format)
+    df_exibicao["VALOR UNITARIO"] = df_exibicao["VALOR UNITARIO"].apply(format_brl)
+    df_exibicao["VALOR TOTAL"] = df_exibicao["VALOR TOTAL"].apply(format_brl)
     
     st.dataframe(df_exibicao, use_container_width=True, hide_index=True)
     
@@ -157,77 +174,109 @@ if st.session_state.orcamento:
     
     col_t1, col_t2 = st.columns([2, 1])
     with col_t2:
-        st.markdown(f"**Subtotal dos Itens:** R$ {subtotal:.2f}")
-        st.markdown(f"**Frete de Envio:** R$ {valor_frete:.2f}")
-        st.markdown(f"### **TOTAL GERAL: R$ {total_geral:.2f}**")
+        st.markdown(f"**Subtotal dos Itens:** {format_brl(subtotal)}")
+        st.markdown(f"**Frete de Envio:** {format_brl(valor_frete)}")
+        st.markdown(f"### **TOTAL GERAL: {format_brl(total_geral)}**")
     
+    # --- CONSTRUÇÃO DO PDF NATIVO VIA XHTML2PDF ---
     data_formatada = data_emissao.strftime('%d/%m/%Y')
     
     linhas_html = ""
     for _, row in df_orcamento.iterrows():
         linhas_html += f"""
         <tr>
-            <td style='padding: 10px; text-align: center; border-bottom: 1px solid #e2e8f0;'>{row['QTD']}</td>
-            <td style='padding: 10px; border-bottom: 1px solid #e2e8f0;'>{row['MEDIDAS']}</td>
-            <td style='padding: 10px; border-bottom: 1px solid #e2e8f0; color:#1e2b7a;'><strong>{row['PERFIL']}</strong></td>
-            <td style='padding: 10px; border-bottom: 1px solid #e2e8f0;'>{row['COR']}</td>
-            <td style='padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;'>R$ {row['VALOR UNITARIO']:.2f}</td>
-            <td style='padding: 10px; text-align: right; border-bottom: 1px solid #e2e8f0;'><strong>R$ {row['VALOR TOTAL']:.2f}</strong></td>
+            <td align="center">{row['QTD']}</td>
+            <td>{row['MEDIDAS']}</td>
+            <td style="color:#1e2b7a; font-weight:bold;">{row['PERFIL']}</td>
+            <td>{row['COR']}</td>
+            <td align="right">{format_brl(row['VALOR UNITARIO'])}</td>
+            <td align="right" style="font-weight:bold;">{format_brl(row['VALOR TOTAL'])}</td>
         </tr>
         """
 
+    img_tag = f'<img src="{logo_src}" style="height: 60px;"><br>' if logo_src else ''
+
+    # Template HTML estruturado especificamente para a biblioteca xhtml2pdf
     html_template = f"""
-    <div style='font-family: system-ui, sans-serif; color: #334155; padding: 30px; background: white; border: 1px solid #cbd5e1; border-radius: 12px; max-width: 850px; margin: 20px auto; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);'>
-        <div style='display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid #1e2b7a; padding-bottom: 20px; margin-bottom: 25px;'>
-            <div>
-                <div style='margin-bottom: 10px;'><img src='{logo_url}' style='max-height: 85px; width: auto;'></div>
-                <div style='font-size: 11px; line-height: 1.5; color: #475569;'>
+    <html>
+    <head>
+    <style>
+        @page {{ size: A4; margin: 1cm; }}
+        body {{ font-family: Helvetica, sans-serif; font-size: 12px; color: #334155; }}
+        .center {{ text-align: center; }}
+        .right {{ text-align: right; }}
+        .title-box {{ background-color: #1e2b7a; color: white; padding: 8px; font-weight: bold; font-size: 13px; text-align: center; border-radius: 4px; }}
+        .client-box {{ background-color: #f8fafc; padding: 12px; border: 1px solid #e2e8f0; border-radius: 4px; }}
+        
+        .table-items {{ width: 100%; border-collapse: collapse; margin-bottom: 25px; }}
+        .table-items th {{ background-color: #f1f5f9; padding: 8px; border-bottom: 2px solid #cbd5e1; color: #475569; text-align: left; }}
+        .table-items td {{ padding: 8px; border-bottom: 1px solid #e2e8f0; }}
+    </style>
+    </head>
+    <body>
+
+    <table width="100%" style="border-bottom: 2px solid #1e2b7a; padding-bottom: 15px; margin-bottom: 20px;">
+        <tr>
+            <td width="65%" valign="middle">
+                {img_tag}
+                <div style="font-size: 10px; color: #475569; margin-top: 10px; line-height: 1.4;">
                     <strong>Razão Social:</strong> OTAVIO GUILHERME TEIXEIRA DE SOUZA NETO<br>
                     <strong>CNPJ:</strong> 38.233.044/0001-34 | <strong>I.E.:</strong> 799.313.829.119<br>
                     Rua João Basso, nº 20, Sala 1 Centro - São Bernardo do Campo-SP<br>
                     <strong>Telefone:</strong> (11) 99425-1306 | <strong>E-mail:</strong> vendas@ognet.com.br
                 </div>
-            </div>
-            <div style='text-align: right;'>
-                <span style='background-color: #1e2b7a; color: white; padding: 6px 16px; font-weight: bold; border-radius: 6px; font-size: 13px; letter-spacing: 1px;'>ORÇAMENTO COMERCIAL</span>
-            </div>
-        </div>
+            </td>
+            <td width="35%" valign="top" align="right">
+                <div class="title-box">ORÇAMENTO COMERCIAL</div>
+            </td>
+        </tr>
+    </table>
 
-        <div style='background-color: #f8fafc; padding: 16px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 25px; font-size: 13px; line-height: 1.6;'>
-            <h4 style='margin: 0 0 8px 0; color: #1e2b7a; font-size: 14px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;'>DADOS DO CLIENTE</h4>
-            <strong>Cliente / Razão Social:</strong> {nome_cliente if nome_cliente else 'Não Informado'}<br>
-            <strong>CPF / CNPJ:</strong> {cnpj_cliente if cnpj_cliente else 'Não Informado'}<br>
-            <strong>Data de Emissão:</strong> {data_formatada}
-        </div>
-
-        <table style='width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 25px;'>
-            <thead>
-                <tr style='background-color: #f1f5f9; text-align: left; color: #475569;'>
-                    <th style='padding: 10px; text-align: center; border-bottom: 2px solid #cbd5e1; width: 8%;'>QTD</th>
-                    <th style='padding: 10px; border-bottom: 2px solid #cbd5e1; width: 25%;'>MEDIDAS</th>
-                    <th style='padding: 10px; border-bottom: 2px solid #cbd5e1; width: 32%;'>PRODUTO / PERFIL</th>
-                    <th style='padding: 10px; border-bottom: 2px solid #cbd5e1; width: 10%;'>COR</th>
-                    <th style='padding: 10px; text-align: right; border-bottom: 2px solid #cbd5e1; width: 12%;'>UNITÁRIO</th>
-                    <th style='padding: 10px; text-align: right; border-bottom: 2px solid #cbd5e1; width: 13%;'>TOTAL</th>
-                </tr>
-            </thead>
-            <tbody>
-                {linhas_html}
-            </tbody>
-        </table>
-
-        <div style='text-align: right; font-size: 14px; margin-top: 20px; line-height: 1.6; border-top: 1px solid #f1f5f9; padding-top: 15px;'>
-            <span style='color: #64748b;'>Subtotal dos Itens:</span> R$ {subtotal:.2f}<br>
-            <span style='color: #64748b;'>Valor do Frete:</span> R$ {valor_frete:.2f}<br>
-            <div style='margin-top: 5px; font-size: 18px; color: #1e2b7a;'><strong>TOTAL GERAL: R$ {total_geral:.2f}</strong></div>
-        </div>
-
-        <div style='margin-top: 40px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; line-height: 1.5;'>
-            * Peças industriais fabricadas sob medida e especificações técnicas solicitadas.<br>
-            <strong>Prazo de Validade deste documento:</strong> 10 dias a contar da data de emissão.
-        </div>
+    <div class="client-box" style="margin-bottom: 20px;">
+        <div style="color: #1e2b7a; font-size: 13px; font-weight: bold; margin-bottom: 8px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">DADOS DO CLIENTE</div>
+        <strong>Cliente / Razão Social:</strong> {nome_cliente if nome_cliente else 'Não Informado'}<br>
+        <strong>CPF / CNPJ:</strong> {cnpj_cliente if cnpj_cliente else 'Não Informado'}<br>
+        <strong>Data de Emissão:</strong> {data_formatada}
     </div>
+
+    <table class="table-items">
+        <tr>
+            <th width="8%" class="center">QTD</th>
+            <th width="22%">MEDIDAS</th>
+            <th width="35%">PRODUTO / PERFIL</th>
+            <th width="10%">COR</th>
+            <th width="12%" class="right">UNITÁRIO</th>
+            <th width="13%" class="right">TOTAL</th>
+        </tr>
+        {linhas_html}
+    </table>
+
+    <table width="100%" border="0">
+        <tr>
+            <td width="50%"></td>
+            <td width="50%" class="right" style="line-height: 1.6;">
+                <span style="color: #64748b;">Subtotal dos Itens:</span> {format_brl(subtotal)}<br>
+                <span style="color: #64748b;">Valor do Frete:</span> {format_brl(valor_frete)}<br>
+                <br>
+                <span style="font-size: 18px; color: #1e2b7a; font-weight: bold;">TOTAL GERAL: {format_brl(total_geral)}</span>
+            </td>
+        </tr>
+    </table>
+
+    <div class="center" style="font-size: 10px; color: #94a3b8; margin-top: 50px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+        * Peças industriais fabricadas sob medida e especificações técnicas solicitadas.<br>
+        <strong>Prazo de Validade deste documento:</strong> 10 dias a contar da data de emissão.
+    </div>
+
+    </body>
+    </html>
     """
+
+    # Função que transforma o HTML estruturado acima em um arquivo PDF real
+    def criar_pdf(html_content):
+        pdf_buffer = BytesIO()
+        pisa.CreatePDF(BytesIO(html_content.encode('utf-8')), dest=pdf_buffer)
+        return pdf_buffer.getvalue()
 
     col_b1, col_b2 = st.columns([1, 4])
     with col_b1:
@@ -236,11 +285,12 @@ if st.session_state.orcamento:
             st.rerun()
             
     with col_b2:
+        # Botão de download já servindo o arquivo binário convertido (.pdf)
         st.download_button(
-            label="💾 Baixar Documento de Orçamento (HTML/PDF)",
-            data=html_template,
-            file_name=f"Orcamento_OGNET_{datetime.now().strftime('%d%m%Y')}.html",
-            mime="text/html",
+            label="💾 Baixar Documento de Orçamento (Arquivo PDF)",
+            data=criar_pdf(html_template),
+            file_name=f"Orcamento_OGNET_{datetime.now().strftime('%d%m%Y')}.pdf",
+            mime="application/pdf",
             use_container_width=True,
             type="primary"
         )
