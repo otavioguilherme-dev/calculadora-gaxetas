@@ -6,7 +6,7 @@ import base64
 from io import BytesIO
 from xhtml2pdf import pisa
 
-st.set_page_config(page_title="OGNET BORRACHAS", layout="wide", page_icon="🧮")
+st.set_page_config(page_title="CALCULADORA OGNET BORRACHAS", layout="wide", page_icon="🧮")
 
 # --- FUNÇÕES DE APOIO ---
 def format_brl(valor):
@@ -220,7 +220,7 @@ if st.session_state.orcamento:
             <td width="65%" valign="middle">
                 {img_tag}
                 <div style="font-size: 10px; color: #475569; margin-top: 10px; line-height: 1.4;">
-                    <strong>Razão Social:</strong> OTAVIO GUILHERME TEIXEIRA DE SOUZA NETO<br>
+                    <strong>Razão Social:</strong> OGNET BORRACHAS <br>
                     <strong>CNPJ:</strong> 38.233.044/0001-34 | <strong>I.E.:</strong> 799.313.829.119<br>
                     Rua João Basso, nº 20, Sala 1 Centro - São Bernardo do Campo-SP<br>
                     <strong>Telefone:</strong> (11) 99425-1306 | <strong>E-mail:</strong> vendas@ognet.com.br
