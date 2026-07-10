@@ -1,10 +1,9 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-import streamlit.components.v1 as components
 
 # Configuração da página
-st.set_page_config(page_title="Calculadora OGNET BORRACHAS", layout="wide", page_icon="🧮")
+st.set_page_config(page_title="Calculadora Ognet-Shop", layout="wide", page_icon="🧮")
 
 # --- ESTILIZAÇÃO DO LOGOTIPO E DADOS DA EMPRESA (image_79ef50.png) ---
 st.markdown(
@@ -141,10 +140,10 @@ if st.session_state.orcamento:
         st.markdown(f"**Frete:** R$ {valor_frete:.2f}")
         st.markdown(f"### **TOTAL GERAL: R$ {total_geral:.2f}**")
     
-    # --- CONSTRUÇÃO DA FOLHA DE IMPRESSÃO (HTML/CSS) ---
+    # --- CONSTRUÇÃO DO DOCUMENTO PARA DOWNLOAD E PRÉVIA ---
     data_formatada = data_emissao.strftime('%d/%m/%Y')
     
-    # Monta as linhas da tabela em HTML para o documento de impressão
+    # Monta as linhas da tabela em HTML
     linhas_html = ""
     for _, row in df_orcamento.iterrows():
         linhas_html += f"""
@@ -159,26 +158,11 @@ if st.session_state.orcamento:
         """
     
     html_template = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Orçamento Refrigeração Ognet-Shop</title>
-        <style>
-            body {{ font-family: sans-serif; color: #334155; margin: 30px; }}
-            .header {{ display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1e3a8a; padding-bottom: 15px; margin-bottom: 20px; }}
-            .company-info {{ font-size: 12px; }}
-            .client-box {{ background-color: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 25px; font-size: 13px; }}
-            table {{ width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 20px; }}
-            th {{ background-color: #f1f5f9; padding: 10px; text-align: left; border-bottom: 2px solid #cbd5e1; font-weight: bold; }}
-            .totals {{ text-align: right; font-size: 14px; margin-top: 20px; line-height: 1.6; }}
-            .footer {{ margin-top: 50px; text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; }}
-        </style>
-    </head>
-    <body>
-        <div class="header">
+    <div style="font-family: sans-serif; color: #334155; padding: 25px; background: white; border: 1px solid #cbd5e1; border-radius: 8px; max-width: 800px; margin: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1e3a8a; padding-bottom: 15px; margin-bottom: 20px;">
             <div>
-                <h2 style="margin:0; color:#1e3a8a;">REFRIGERAÇÃO OGNET-SHOP</h2>
-                <div class="company-info" style="margin-top:5px; line-height: 1.4;">
+                <h2 style="margin:0; color:#1e3a8a; font-size: 20px;">REFRIGERAÇÃO OGNET-SHOP</h2>
+                <div style="font-size: 11px; margin-top:5px; line-height: 1.4; color: #475569;">
                     Otavio Guilherme Teixeira de Souza Neto<br>
                     <strong>CNPJ:</strong> 38.233.044/0001-34 | <strong>I.E.:</strong> 799.313.829.119<br>
                     Rua João Basso n 20, Sala 1 Centro São Bernardo do Campo-SP<br>
@@ -186,26 +170,26 @@ if st.session_state.orcamento:
                 </div>
             </div>
             <div style="text-align: right;">
-                <span style="background-color: #1e3a8a; color: white; padding: 5px 12px; font-weight: bold; border-radius: 4px; font-size: 12px;">ORÇAMENTO</span>
+                <span style="background-color: #1e3a8a; color: white; padding: 4px 10px; font-weight: bold; border-radius: 4px; font-size: 11px;">ORÇAMENTO</span>
             </div>
         </div>
 
-        <div class="client-box">
-            <h4 style="margin: 0 0 8px 0; color: #1e3a8a;">DADOS DO CLIENTE</h4>
+        <div style="background-color: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 20px; font-size: 12px; line-height: 1.5;">
+            <h4 style="margin: 0 0 5px 0; color: #1e3a8a; font-size: 13px;">DADOS DO CLIENTE</h4>
             <strong>Cliente / Razão Social:</strong> {nome_cliente if nome_cliente else 'Não Informado'}<br>
             <strong>CPF / CNPJ:</strong> {cnpj_cliente if cnpj_cliente else 'Não Informado'}<br>
             <strong>Data de Emissão:</strong> {data_formatada}
         </div>
 
-        <table>
+        <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 20px;">
             <thead>
-                <tr>
-                    <th style="text-align: center; width: 8%;">QTD</th>
-                    <th style="width: 25%;">MEDIDAS</th>
-                    <th style="width: 15%;">PERFIL</th>
-                    <th style="width: 17%;">COR</th>
-                    <th style="text-align: right; width: 17%;">VALOR UNITARIO</th>
-                    <th style="text-align: right; width: 18%;">VALOR TOTAL</th>
+                <tr style="background-color: #f1f5f9; text-align: left;">
+                    <th style="padding: 8px; text-align: center; border-bottom: 2px solid #cbd5e1;">QTD</th>
+                    <th style="padding: 8px; border-bottom: 2px solid #cbd5e1;">MEDIDAS</th>
+                    <th style="padding: 8px; border-bottom: 2px solid #cbd5e1;">PERFIL</th>
+                    <th style="padding: 8px; border-bottom: 2px solid #cbd5e1;">COR</th>
+                    <th style="padding: 8px; text-align: right; border-bottom: 2px solid #cbd5e1;">VALOR UNITÁRIO</th>
+                    <th style="padding: 8px; text-align: right; border-bottom: 2px solid #cbd5e1;">VALOR TOTAL</th>
                 </tr>
             </thead>
             <tbody>
@@ -213,44 +197,38 @@ if st.session_state.orcamento:
             </tbody>
         </table>
 
-        <div class="totals">
+        <div style="text-align: right; font-size: 13px; margin-top: 15px; line-height: 1.5;">
             <span>Subtotal dos Itens: R$ {subtotal:.2f}</span><br>
             <span>Valor do Frete: R$ {valor_frete:.2f}</span><br>
-            <strong style="font-size: 18px; color: #1e3a8a;">TOTAL GERAL: R$ {total_geral:.2f}</strong>
+            <strong style="font-size: 16px; color: #1e3a8a;">TOTAL GERAL: R$ {total_geral:.2f}</strong>
         </div>
 
-        <div class="footer">
+        <div style="margin-top: 35px; text-align: center; font-size: 10px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 10px;">
             * Peças fabricadas sob medida. Orçamento válido por 10 dias.<br>
             Obrigado pela preferência!
         </div>
-
-        <script>
-            // Dispara automaticamente a janela de impressão/PDF ao carregar a nova aba
-            window.onload = function() {{ window.print(); }}
-        </script>
-    </body>
-    </html>
+    </div>
     """
 
-    # Injeção de script de abertura de página via Componentes Streamlit
+    # Layout de botões de controle
     col_b1, col_b2 = st.columns([1, 4])
     with col_b1:
-        if st.button("🗑️ Limpar Orçamento", use_container_width=True):
+        if st.button("🗑️ Limpar Lista", use_container_width=True):
             st.session_state.orcamento = []
             st.rerun()
             
     with col_b2:
-        if st.button("🖨️ Gerar Visualização de Impressão (PDF)", type="primary", use_container_width=True):
-            # Codifica o HTML para que possa ser aberto em uma nova aba via JS
-            html_encoded = html_template.replace("\n", "").replace("'", "\\'")
-            js_script = f"""
-            <script>
-                var w = window.open();
-                w.document.write('{html_encoded}');
-                w.document.close();
-            </script>
-            """
-            components.html(js_script, height=0, width=0)
-
-else:
-    st.info("Nenhum item adicionado.")
+        # Usa o recurso nativo do Streamlit para baixar arquivos HTML que abrem e imprimem direto de qualquer PC/Celular
+        st.download_button(
+            label="💾 Baixar Documento de Orçamento (HTML/PDF)",
+            data=html_template,
+            file_name=f"Orcamento_{nome_cliente.replace(' ', '_') if nome_cliente else 'Cliente'}_{datetime.now().strftime('%d%m%Y')}.html",
+            mime="text/html",
+            use_container_width=True,
+            type="primary"
+        )
+        
+    # --- ÁREA DE PRÉ-VISUALIZAÇÃO FISCAL NA TELA ---
+    st.markdown("---")
+    st.subheader("👁️ Espelho do Orçamento para Envio")
+    st.markdown("Abaixo está a visualização exata de como o arquivo salvo vai abrir para o cliente:")
