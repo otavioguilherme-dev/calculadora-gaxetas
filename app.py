@@ -5,8 +5,9 @@ import requests
 import base64
 from io import BytesIO
 from xhtml2pdf import pisa
+import os
 
-st.set_page_config(page_title="OGNET BORRACHAS", layout="wide", page_icon="🧮")
+st.set_page_config(page_title="OGNET SISTEMAS", layout="wide", page_icon="🧮")
 
 # --- FUNÇÕES DE APOIO ---
 def format_brl(valor):
@@ -14,16 +15,34 @@ def format_brl(valor):
     return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 @st.cache_data
-def get_logo_base64():
-    """Baixa o logo para a memória do servidor para o PDF não quebrar"""
-    url = "https://agent-whatsapp.streamlit.app/~/+/media/a3d2d8b206613ad841cb11e9bf12f484.jpg"
-    try:
-        response = requests.get(url)
-        return base64.b64encode(response.content).decode()
-    except:
-        return ""
+def get_logo_base64(segmento):
+    """Baixa ou lê o logo de acordo com o segmento selecionado"""
+    if segmento == "Refrigeração":
+        url = "https://agent-whatsapp.streamlit.app/~/+/media/a3d2d8b206613ad841cb11e9bf12f484.jpg"
+        try:
+            response = requests.get(url)
+            return base64.b64encode(response.content).decode()
+        except:
+            return ""
+    else:
+        # Lê o logo náutico localmente (arquivo que deve ser subido no GitHub)
+        try:
+            with open("ognet_nautico.jpg", "rb") as f:
+                return base64.b64encode(f.read()).decode()
+        except Exception as e:
+            return ""
 
-logo_b64 = get_logo_base64()
+# --- PAINEL LATERAL ---
+st.sidebar.header("🏢 Identidade do Orçamento")
+segmento_orcamento = st.sidebar.radio("Selecione o segmento:", ["Refrigeração", "Náutico"])
+
+# Variáveis visuais que mudam conforme o segmento
+if segmento_orcamento == "Refrigeração":
+    nome_empresa = "OGNET BORRACHAS / REFRIGERAÇÃO"
+else:
+    nome_empresa = "OGNET NÁUTICOS"
+
+logo_b64 = get_logo_base64(segmento_orcamento)
 logo_src = f"data:image/jpeg;base64,{logo_b64}" if logo_b64 else ""
 
 logo_html = f"""
@@ -31,6 +50,12 @@ logo_html = f"""
     <img src='{logo_src}' style='max-height: 85px; width: auto; object-fit: contain;'>
 </div>
 """
+
+st.sidebar.markdown("---")
+st.sidebar.header("⚙️ Valores Globais Gaxetas (por Metro)")
+preco_instalador_m = st.sidebar.number_input("Preço Instalador / Revenda (R$)", value=25.00, step=1.00)
+preco_consumidor_m = st.sidebar.number_input("Preço Consumidor / Balcão (R$)", value=30.00, step=1.00)
+
 
 # Renderização do cabeçalho da loja na tela do sistema
 st.markdown(
@@ -40,8 +65,9 @@ st.markdown(
         <div style='display: flex; align-items: center; gap: 25px; flex-wrap: wrap;'>
             <div>{logo_html}</div>
             <div style='border-left: 2px solid #e2e8f0; padding-left: 25px; min-width: 280px;'>
-                <h3 style='margin: 0; color: #1e3a8a; font-family: sans-serif; font-size: 16px; font-weight: 700;'>OGNET BORRACHAS / REFRIGERAÇÃO</h3>
+                <h3 style='margin: 0; color: #1e3a8a; font-family: sans-serif; font-size: 16px; font-weight: 700;'>{nome_empresa}</h3>
                 <p style='margin: 4px 0 0 0; color: #475569; font-family: sans-serif; font-size: 12px; line-height: 1.5;'>
+                    <strong>Razão Social:</strong> OTAVIO GUILHERME TEIXEIRA DE SOUZA NETO<br>
                     <strong>CNPJ:</strong> 38.233.044/0001-34 | <strong>I.E.:</strong> 799.313.829.119<br>
                     <strong>Endereço:</strong> Rua João Basso, nº 20, Sala 1 Centro - São Bernardo do Campo-SP<br>
                     <strong>Contato:</strong> (11) 99425-1306 | <strong>E-mail:</strong> vendas@ognet.com.br
@@ -58,11 +84,6 @@ st.markdown(
 
 if "orcamento" not in st.session_state:
     st.session_state.orcamento = []
-
-# --- PAINEL LATERAL ---
-st.sidebar.header("⚙️ Valores Globais (por Metro)")
-preco_instalador_m = st.sidebar.number_input("Preço Instalador / Revenda (R$)", value=25.00, step=1.00)
-preco_consumidor_m = st.sidebar.number_input("Preço Consumidor / Balcão (R$)", value=30.00, step=1.00)
 
 # --- CAMPOS DO CLIENTE ---
 st.subheader("👤 Dados do Cliente e Envio")
@@ -81,7 +102,11 @@ st.markdown("---")
 # --- FORMULÁRIO DE ENTRADA DE ITENS (ABAS) ---
 st.subheader("➕ Adicionar Item ao Orçamento")
 
-aba_gaxetas, aba_outros = st.tabs(["🔲 Gaxetas / Borrachas Sob Medida", "📦 Outros Produtos (Inclusão Manual)"])
+aba_gaxetas, aba_nautica, aba_outros = st.tabs([
+    "🔲 Gaxetas / Borrachas", 
+    "⚓ Linha Náutica (Verdugos)", 
+    "📦 Outros (Manual)"
+])
 
 # ABA 1: GAXETAS E BORRACHAS
 with aba_gaxetas:
@@ -103,9 +128,9 @@ with aba_gaxetas:
     with col4:
         perfil_selecionado = st.selectbox("PERFIL", lista_perfis)
     with col5:
-        cor_selecionada = st.selectbox("COR", ["PRETO", "CINZA CLARO", "CINZA GRAFITE"])
+        cor_selecionada = st.selectbox("COR", ["PRETO", "CINZA CLARO", "CINZA GRAFITE"], key="cor_gaxeta")
     with col6:
-        tipo_preco = st.selectbox("TABELA", ["Consumidor", "Instalador"])
+        tipo_preco = st.selectbox("TABELA", ["Consumidor", "Instalador"], key="tipo_tabela_gaxeta")
 
     perimetro_metros = ((altura * 2) + (largura * 2)) / 1000
     preco_metro_atual = preco_consumidor_m if tipo_preco == "Consumidor" else preco_instalador_m
@@ -113,7 +138,7 @@ with aba_gaxetas:
     valor_unitario_gaxeta = perimetro_metros * preco_metro_atual
     valor_total_gaxeta = valor_unitario_gaxeta * quantidade_gaxeta
 
-    if st.button("🛒 Adicionar Borracha/Gaxeta", use_container_width=True):
+    if st.button("🛒 Adicionar Borracha/Gaxeta ao Orçamento", use_container_width=True):
         item = {
             "QTD": quantidade_gaxeta,
             "MEDIDAS": f"{altura}x{largura} mm",
@@ -125,14 +150,54 @@ with aba_gaxetas:
         st.session_state.orcamento.append(item)
         st.rerun()
 
-# ABA 2: OUTROS PRODUTOS (MANUAL)
+# ABA 2: NÁUTICA (BASEADA NA PLANILHA CALCULADORA VERDUGOS)
+with aba_nautica:
+    # Tabela de preços lida a partir da sua planilha (Preço por Metro Linear)
+    PRECOS_NAUTICOS = {
+        "CAPA V35": {"Instalador": 18.03, "Consumidor": 36.06},
+        "CAPA V50": {"Instalador": 21.11, "Consumidor": 42.22},
+        "BASE VERDUGO V35": {"Instalador": 32.15, "Consumidor": 64.30},
+        "BASE VERDUGO 50": {"Instalador": 80.60, "Consumidor": 161.20},
+        "KIT V35": {"Instalador": 50.18, "Consumidor": 100.36},
+        "KIT V50": {"Instalador": 101.71, "Consumidor": 203.42},
+    }
+
+    col_n1, col_n2, col_n3, col_n4, col_n5 = st.columns([1, 2, 2, 2, 1])
+    with col_n1:
+        qtd_item_nautico = st.number_input("QTD (Kits/Rolos)", min_value=1, value=1, step=1, key="qtd_nautico")
+    with col_n2:
+        qtd_metros_nautico = st.number_input("Metragem (m)", min_value=0.5, value=1.0, step=0.5, key="metros_nautico")
+    with col_n3:
+        produto_nautico = st.selectbox("PRODUTO NÁUTICO", list(PRECOS_NAUTICOS.keys()))
+    with col_n4:
+        cor_nautica = st.selectbox("COR", ["PRETO", "BRANCO", "CINZA", "-"], key="cor_nautica")
+    with col_n5:
+        tipo_preco_nautico = st.selectbox("TABELA", ["Consumidor", "Instalador"], key="tipo_tabela_nautico")
+
+    # Calcula preço da peça (metragem * preço por metro na tabela selecionada)
+    preco_metro_nautico = PRECOS_NAUTICOS[produto_nautico][tipo_preco_nautico]
+    valor_unitario_nautico = preco_metro_nautico * qtd_metros_nautico
+    valor_total_nautico = valor_unitario_nautico * qtd_item_nautico
+
+    if st.button("⚓ Adicionar Item Náutico ao Orçamento", use_container_width=True, type="primary"):
+        item_nautico = {
+            "QTD": qtd_item_nautico,
+            "MEDIDAS": f"{qtd_metros_nautico} metros",
+            "PERFIL": produto_nautico,
+            "COR": cor_nautica,
+            "VALOR UNITARIO": valor_unitario_nautico,
+            "VALOR TOTAL": valor_total_nautico
+        }
+        st.session_state.orcamento.append(item_nautico)
+        st.rerun()
+
+# ABA 3: OUTROS PRODUTOS (MANUAL)
 with aba_outros:
-    st.markdown("Preencha os dados abaixo para adicionar qualquer outro produto ao orçamento:")
     col_m1, col_m2, col_m3 = st.columns([1, 3, 1])
     with col_m1:
         qtd_manual = st.number_input("QTD", min_value=1, value=1, step=1, key="qtd_manual")
     with col_m2:
-        desc_manual = st.text_input("Descrição / Modelo do Produto", placeholder="Ex: Cola Especial, Bandeja Náutica, etc.")
+        desc_manual = st.text_input("Descrição / Modelo do Produto", placeholder="Ex: Cola Especial, Defensas, etc.")
     with col_m3:
         preco_manual = st.number_input("Preço Unitário (R$)", min_value=0.00, value=0.00, step=1.00)
 
@@ -222,7 +287,7 @@ if st.session_state.orcamento:
             <td width="65%" valign="middle">
                 {img_tag}
                 <div style="font-size: 10px; color: #475569; margin-top: 10px; line-height: 1.4;">
-                    <strong>Razão Social:</strong> OGNET BORRACHAS / REFRIGERAÇÃO<br>
+                    <strong>Razão Social:</strong> {nome_empresa}<br>
                     <strong>CNPJ:</strong> 38.233.044/0001-34 | <strong>I.E.:</strong> 799.313.829.119<br>
                     Rua João Basso, nº 20, Sala 1 Centro - São Bernardo do Campo-SP<br>
                     <strong>Telefone:</strong> (11) 99425-1306 | <strong>E-mail:</strong> vendas@ognet.com.br
