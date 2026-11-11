@@ -9,7 +9,7 @@ import os
 
 st.set_page_config(page_title="SISTEMA DE ORÇAMENTOS", layout="wide", page_icon="🧮")
 
-# --- BANCO DE DADOS DAS EMPRESAS EMISSORAS ---
+# --- BANCO DE DADOS DAS EMPRESAS EMISSORAS (COM MARKUP DE PREÇO) ---
 EMPRESAS = {
     "OGNET (Otávio)": {
         "nome_fantasia_refrigeracao": "OGNET BORRACHAS / REFRIGERAÇÃO",
@@ -19,7 +19,8 @@ EMPRESAS = {
         "endereco": "Rua João Basso, nº 20, Sala 1 Centro - São Bernardo do Campo-SP",
         "contato": "(11) 99425-1306",
         "email": "vendas@ognet.com.br",
-        "logo_refrigeracao": "url" # Usa a URL hospedada
+        "logo_refrigeracao": "url",
+        "markup": 1.00  # Preço Base (Mais Barato)
     },
     "Cristiane Baleeiro": {
         "nome_fantasia_refrigeracao": "CRIS BORRACHAS",
@@ -29,7 +30,8 @@ EMPRESAS = {
         "endereco": "Rua Bela Vista 724 - 84b Centro - São Bernardo do Campo-SP",
         "contato": "(11) 99563-2270",
         "email": "vendas@ognet.com.br",
-        "logo_refrigeracao": "cris_logo.jpg"
+        "logo_refrigeracao": "cris_logo.jpg",
+        "markup": 1.15  # 15% Mais Caro
     },
     "Alzira Baleeiro": {
         "nome_fantasia_refrigeracao": "ALZ BORRACHAS",
@@ -39,7 +41,8 @@ EMPRESAS = {
         "endereco": "Rua Joao Basso - 200 Centro - São Bernardo do Campo-SP",
         "contato": "(11) 93219-0177",
         "email": "vendas@ognet.com.br",
-        "logo_refrigeracao": "alz_logo.jpg"
+        "logo_refrigeracao": "alz_logo.jpg",
+        "markup": 1.20  # 20% Mais Caro
     }
 }
 
@@ -81,6 +84,7 @@ segmento_orcamento = st.sidebar.radio("Selecione o segmento:", ["Refrigeração"
 empresa_selecionada = st.sidebar.selectbox("Empresa Emissora:", list(EMPRESAS.keys()))
 
 dados_emp = EMPRESAS[empresa_selecionada]
+markup_atual = dados_emp["markup"]
 
 # Determina o Nome Fantasia a ser exibido
 if segmento_orcamento == "Refrigeração":
@@ -181,7 +185,6 @@ with aba_gaxetas:
     preco_metro_atual = preco_consumidor_m if tipo_preco == "Consumidor" else preco_instalador_m
 
     valor_unitario_gaxeta = perimetro_metros * preco_metro_atual
-    valor_total_gaxeta = valor_unitario_gaxeta * quantidade_gaxeta
 
     if st.button("🛒 Adicionar Borracha/Gaxeta ao Orçamento", use_container_width=True):
         item = {
@@ -189,8 +192,7 @@ with aba_gaxetas:
             "MEDIDAS": f"{altura}x{largura} mm",
             "PERFIL": perfil_selecionado,
             "COR": cor_selecionada,
-            "VALOR UNITARIO": valor_unitario_gaxeta,
-            "VALOR TOTAL": valor_total_gaxeta
+            "VALOR_BASE": valor_unitario_gaxeta # Salva o preço original sem markup
         }
         st.session_state.orcamento.append(item)
         st.rerun()
@@ -220,7 +222,6 @@ with aba_nautica:
 
     preco_metro_nautico = PRECOS_NAUTICOS[produto_nautico][tipo_preco_nautico]
     valor_unitario_nautico = preco_metro_nautico * qtd_metros_nautico
-    valor_total_nautico = valor_unitario_nautico * qtd_item_nautico
 
     if st.button("⚓ Adicionar Item Náutico ao Orçamento", use_container_width=True, type="primary"):
         item_nautico = {
@@ -228,8 +229,7 @@ with aba_nautica:
             "MEDIDAS": f"{qtd_metros_nautico} metros",
             "PERFIL": produto_nautico,
             "COR": cor_nautica,
-            "VALOR UNITARIO": valor_unitario_nautico,
-            "VALOR TOTAL": valor_total_nautico
+            "VALOR_BASE": valor_unitario_nautico # Salva o preço original sem markup
         }
         st.session_state.orcamento.append(item_nautico)
         st.rerun()
@@ -244,8 +244,6 @@ with aba_outros:
     with col_m3:
         preco_manual = st.number_input("Preço Unitário (R$)", min_value=0.00, value=0.00, step=1.00)
 
-    valor_total_manual = qtd_manual * preco_manual
-
     if st.button("➕ Adicionar Produto Diversos", use_container_width=True, type="secondary"):
         if desc_manual.strip() == "":
             st.warning("⚠️ Por favor, digite uma descrição para o produto.")
@@ -255,21 +253,35 @@ with aba_outros:
                 "MEDIDAS": "-",
                 "PERFIL": desc_manual,
                 "COR": "-",
-                "VALOR UNITARIO": preco_manual,
-                "VALOR TOTAL": valor_total_manual
+                "VALOR_BASE": preco_manual # Salva o preço original sem markup
             }
             st.session_state.orcamento.append(item_manual)
             st.rerun()
 
-# --- DETALHE DO ORÇAMENTO ---
+# --- DETALHE DO ORÇAMENTO (CÁLCULO DINÂMICO) ---
 st.markdown("---")
 st.subheader("📋 Detalhes do Orçamento")
 
 if st.session_state.orcamento:
-    df_orcamento = pd.DataFrame(st.session_state.orcamento)
-    ordem_colunas = ["QTD", "MEDIDAS", "PERFIL", "COR", "VALOR UNITARIO", "VALOR TOTAL"]
-    df_orcamento = df_orcamento[ordem_colunas]
+    itens_processados = []
     
+    # Aplica o markup dinâmico dependendo da empresa selecionada no momento
+    for item in st.session_state.orcamento:
+        v_unit = item["VALOR_BASE"] * markup_atual
+        v_total = v_unit * item["QTD"]
+        
+        itens_processados.append({
+            "QTD": item["QTD"],
+            "MEDIDAS": item["MEDIDAS"],
+            "PERFIL": item["PERFIL"],
+            "COR": item["COR"],
+            "VALOR UNITARIO": v_unit,
+            "VALOR TOTAL": v_total
+        })
+
+    df_orcamento = pd.DataFrame(itens_processados)
+    
+    # Formatação apenas para a exibição na tela
     df_exibicao = df_orcamento.copy()
     df_exibicao["VALOR UNITARIO"] = df_exibicao["VALOR UNITARIO"].apply(format_brl)
     df_exibicao["VALOR TOTAL"] = df_exibicao["VALOR TOTAL"].apply(format_brl)
