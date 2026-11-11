@@ -7,7 +7,41 @@ from io import BytesIO
 from xhtml2pdf import pisa
 import os
 
-st.set_page_config(page_title="OGNET SISTEMAS", layout="wide", page_icon="🧮")
+st.set_page_config(page_title="SISTEMA DE ORÇAMENTOS", layout="wide", page_icon="🧮")
+
+# --- BANCO DE DADOS DAS EMPRESAS EMISSORAS ---
+EMPRESAS = {
+    "OGNET (Otávio)": {
+        "nome_fantasia_refrigeracao": "OGNET BORRACHAS / REFRIGERAÇÃO",
+        "razao_social": "OTAVIO GUILHERME TEIXEIRA DE SOUZA NETO",
+        "cnpj": "38.233.044/0001-34",
+        "ie": "799.313.829.119",
+        "endereco": "Rua João Basso, nº 20, Sala 1 Centro - São Bernardo do Campo-SP",
+        "contato": "(11) 99425-1306",
+        "email": "vendas@ognet.com.br",
+        "logo_refrigeracao": "url" # Usa a URL hospedada
+    },
+    "Cristiane Baleeiro": {
+        "nome_fantasia_refrigeracao": "CRIS BORRACHAS",
+        "razao_social": "CRISTIANE EUGENIA BALEEIRO",
+        "cnpj": "43.082.385/0001-96",
+        "ie": "Isento",
+        "endereco": "Rua Bela Vista 724 - 84b Centro - São Bernardo do Campo-SP",
+        "contato": "(11) 99563-2270",
+        "email": "vendas@ognet.com.br",
+        "logo_refrigeracao": "cris_logo.jpg"
+    },
+    "Alzira Baleeiro": {
+        "nome_fantasia_refrigeracao": "ALZ BORRACHAS",
+        "razao_social": "29.879.752 ALZIRA EUGENIA BALEEIRO",
+        "cnpj": "29.879.752/0001-56",
+        "ie": "Isento",
+        "endereco": "Rua Joao Basso - 200 Centro - São Bernardo do Campo-SP",
+        "contato": "(11) 93219-0177",
+        "email": "vendas@ognet.com.br",
+        "logo_refrigeracao": "alz_logo.jpg"
+    }
+}
 
 # --- FUNÇÕES DE APOIO ---
 def format_brl(valor):
@@ -15,34 +49,46 @@ def format_brl(valor):
     return f"R$ {valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
 
 @st.cache_data
-def get_logo_base64(segmento):
-    """Baixa ou lê o logo de acordo com o segmento selecionado"""
-    if segmento == "Refrigeração":
-        url = "https://agent-whatsapp.streamlit.app/~/+/media/a3d2d8b206613ad841cb11e9bf12f484.jpg"
-        try:
-            response = requests.get(url)
-            return base64.b64encode(response.content).decode()
-        except:
-            return ""
-    else:
-        # Lê o logo náutico localmente (arquivo que deve ser subido no GitHub)
+def get_logo_base64(segmento, empresa_nome):
+    """Obtém o logotipo em Base64 dependendo do segmento e da empresa escolhida"""
+    if segmento == "Náutico":
         try:
             with open("ognet_nautico.jpg", "rb") as f:
                 return base64.b64encode(f.read()).decode()
-        except Exception as e:
+        except Exception:
             return ""
+    else:
+        # Segmento Refrigeração
+        logo_ref_info = EMPRESAS[empresa_nome]["logo_refrigeracao"]
+        if logo_ref_info == "url":
+            url = "https://agent-whatsapp.streamlit.app/~/+/media/a3d2d8b206613ad841cb11e9bf12f484.jpg"
+            try:
+                response = requests.get(url)
+                return base64.b64encode(response.content).decode()
+            except:
+                return ""
+        else:
+            # Arquivo local (cris_logo.jpg ou alz_logo.jpg)
+            try:
+                with open(logo_ref_info, "rb") as f:
+                    return base64.b64encode(f.read()).decode()
+            except Exception:
+                return ""
 
 # --- PAINEL LATERAL ---
 st.sidebar.header("🏢 Identidade do Orçamento")
 segmento_orcamento = st.sidebar.radio("Selecione o segmento:", ["Refrigeração", "Náutico"])
+empresa_selecionada = st.sidebar.selectbox("Empresa Emissora:", list(EMPRESAS.keys()))
 
-# Variáveis visuais que mudam conforme o segmento
+dados_emp = EMPRESAS[empresa_selecionada]
+
+# Determina o Nome Fantasia a ser exibido
 if segmento_orcamento == "Refrigeração":
-    nome_empresa = "OGNET BORRACHAS / REFRIGERAÇÃO"
+    nome_fantasia = dados_emp["nome_fantasia_refrigeracao"]
 else:
-    nome_empresa = "OGNET NÁUTICOS"
+    nome_fantasia = "OGNET NÁUTICOS"
 
-logo_b64 = get_logo_base64(segmento_orcamento)
+logo_b64 = get_logo_base64(segmento_orcamento, empresa_selecionada)
 logo_src = f"data:image/jpeg;base64,{logo_b64}" if logo_b64 else ""
 
 logo_html = f"""
@@ -56,8 +102,7 @@ st.sidebar.header("⚙️ Valores Globais Gaxetas (por Metro)")
 preco_instalador_m = st.sidebar.number_input("Preço Instalador / Revenda (R$)", value=25.00, step=1.00)
 preco_consumidor_m = st.sidebar.number_input("Preço Consumidor / Balcão (R$)", value=30.00, step=1.00)
 
-
-# Renderização do cabeçalho da loja na tela do sistema
+# --- CABEÇALHO NA TELA DO SISTEMA ---
 st.markdown(
     f"""
     <div style='display: flex; flex-direction: row; justify-content: space-between; align-items: center; 
@@ -65,12 +110,12 @@ st.markdown(
         <div style='display: flex; align-items: center; gap: 25px; flex-wrap: wrap;'>
             <div>{logo_html}</div>
             <div style='border-left: 2px solid #e2e8f0; padding-left: 25px; min-width: 280px;'>
-                <h3 style='margin: 0; color: #1e3a8a; font-family: sans-serif; font-size: 16px; font-weight: 700;'>{nome_empresa}</h3>
+                <h3 style='margin: 0; color: #1e3a8a; font-family: sans-serif; font-size: 16px; font-weight: 700;'>{nome_fantasia}</h3>
                 <p style='margin: 4px 0 0 0; color: #475569; font-family: sans-serif; font-size: 12px; line-height: 1.5;'>
-                    <strong>Razão Social:</strong> OTAVIO GUILHERME TEIXEIRA DE SOUZA NETO<br>
-                    <strong>CNPJ:</strong> 38.233.044/0001-34 | <strong>I.E.:</strong> 799.313.829.119<br>
-                    <strong>Endereço:</strong> Rua João Basso, nº 20, Sala 1 Centro - São Bernardo do Campo-SP<br>
-                    <strong>Contato:</strong> (11) 99425-1306 | <strong>E-mail:</strong> vendas@ognet.com.br
+                    <strong>Razão Social:</strong> {dados_emp['razao_social']}<br>
+                    <strong>CNPJ:</strong> {dados_emp['cnpj']} | <strong>I.E.:</strong> {dados_emp['ie']}<br>
+                    <strong>Endereço:</strong> {dados_emp['endereco']}<br>
+                    <strong>Contato:</strong> {dados_emp['contato']} | <strong>E-mail:</strong> {dados_emp['email']}
                 </p>
             </div>
         </div>
@@ -152,7 +197,6 @@ with aba_gaxetas:
 
 # ABA 2: NÁUTICA (BASEADA NA PLANILHA CALCULADORA VERDUGOS)
 with aba_nautica:
-    # Tabela de preços lida a partir da sua planilha (Preço por Metro Linear)
     PRECOS_NAUTICOS = {
         "CAPA V35": {"Instalador": 18.03, "Consumidor": 36.06},
         "CAPA V50": {"Instalador": 21.11, "Consumidor": 42.22},
@@ -174,7 +218,6 @@ with aba_nautica:
     with col_n5:
         tipo_preco_nautico = st.selectbox("TABELA", ["Consumidor", "Instalador"], key="tipo_tabela_nautico")
 
-    # Calcula preço da peça (metragem * preço por metro na tabela selecionada)
     preco_metro_nautico = PRECOS_NAUTICOS[produto_nautico][tipo_preco_nautico]
     valor_unitario_nautico = preco_metro_nautico * qtd_metros_nautico
     valor_total_nautico = valor_unitario_nautico * qtd_item_nautico
@@ -227,7 +270,6 @@ if st.session_state.orcamento:
     ordem_colunas = ["QTD", "MEDIDAS", "PERFIL", "COR", "VALOR UNITARIO", "VALOR TOTAL"]
     df_orcamento = df_orcamento[ordem_colunas]
     
-    # Formatação apenas para a exibição na tela
     df_exibicao = df_orcamento.copy()
     df_exibicao["VALOR UNITARIO"] = df_exibicao["VALOR UNITARIO"].apply(format_brl)
     df_exibicao["VALOR TOTAL"] = df_exibicao["VALOR TOTAL"].apply(format_brl)
@@ -261,7 +303,6 @@ if st.session_state.orcamento:
 
     img_tag = f'<img src="{logo_src}" style="height: 60px;"><br>' if logo_src else ''
 
-    # Template HTML estruturado especificamente para a biblioteca xhtml2pdf (COM CODIFICAÇÃO UTF-8)
     html_template = f"""
     <!DOCTYPE html>
     <html>
@@ -287,10 +328,10 @@ if st.session_state.orcamento:
             <td width="65%" valign="middle">
                 {img_tag}
                 <div style="font-size: 10px; color: #475569; margin-top: 10px; line-height: 1.4;">
-                    <strong>Razão Social:</strong> {nome_empresa}<br>
-                    <strong>CNPJ:</strong> 38.233.044/0001-34 | <strong>I.E.:</strong> 799.313.829.119<br>
-                    Rua João Basso, nº 20, Sala 1 Centro - São Bernardo do Campo-SP<br>
-                    <strong>Telefone:</strong> (11) 99425-1306 | <strong>E-mail:</strong> vendas@ognet.com.br
+                    <strong>Razão Social:</strong> {dados_emp['razao_social']}<br>
+                    <strong>CNPJ:</strong> {dados_emp['cnpj']} | <strong>I.E.:</strong> {dados_emp['ie']}<br>
+                    <strong>Endereço:</strong> {dados_emp['endereco']}<br>
+                    <strong>Contato:</strong> {dados_emp['contato']} | <strong>E-mail:</strong> {dados_emp['email']}
                 </div>
             </td>
             <td width="35%" valign="top" align="right">
@@ -339,10 +380,8 @@ if st.session_state.orcamento:
     </html>
     """
 
-    # Função atualizada para forçar o encoding correto no PDF
     def criar_pdf(html_content):
         pdf_buffer = BytesIO()
-        # Forçamos a leitura em UTF-8 para garantir que "ç", "ã", "ó" fiquem certos
         pisa.CreatePDF(html_content, dest=pdf_buffer, encoding='utf-8')
         return pdf_buffer.getvalue()
 
@@ -353,12 +392,10 @@ if st.session_state.orcamento:
             st.rerun()
             
     with col_b2:
-        # Lógica para nome do arquivo
         nome_arquivo = nome_cliente.strip().replace(" ", "_") if nome_cliente.strip() else "Cliente"
         data_arquivo = datetime.now().strftime('%d%m%Y')
         nome_completo_arquivo = f"Orcamento_{nome_arquivo}_{data_arquivo}.pdf"
 
-        # Botão de download
         st.download_button(
             label=f"💾 Baixar Documento ({nome_completo_arquivo})",
             data=criar_pdf(html_template),
